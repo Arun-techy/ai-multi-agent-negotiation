@@ -1,0 +1,720 @@
+/* ==========================================================================
+   NegoSim — Redesigned Login Page
+   Glassy, futuristic, light — recolored from reference to NegoSim green
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+/* ── Login-specific tokens ── */
+:root {
+  /* Derived tints from --color-primary #165C47 */
+  --login-mint:          #78D2AA;
+  --login-mint-light:    #A8E6CA;
+  --login-sage:          #B4D4C6;
+  --login-sage-light:    #D6EADF;
+  --login-aqua:          #6BCFB2;
+  --login-pale-mint:     #E4F5ED;
+  --login-ice:           #F0FAF5;
+  --login-glow-white:    #FAFDFB;
+
+  /* Glass surfaces */
+  --login-glass-bg:      rgba(255, 255, 255, 0.55);
+  --login-glass-border:  rgba(255, 255, 255, 0.65);
+  --login-glass-blur:    12px;
+
+  /* HUD card */
+  --login-hud-bg:        rgba(255, 255, 255, 0.12);
+  --login-hud-border:    rgba(255, 255, 255, 0.35);
+  --login-hud-shadow:    0 24px 80px rgba(22, 92, 71, 0.12), 0 8px 32px rgba(22, 92, 71, 0.06);
+
+  /* Animation tokens */
+  --float-duration:      5s;
+  --float-y:             8px;
+  --beam-duration:       65s;
+  --entrance-duration:   0.7s;
+  --entrance-stagger:    60ms;
+  --entrance-ease:       var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/* ── Full-page layout ── */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans, "Outfit", "Space Grotesk", "Inter", sans-serif);
+  color: var(--color-text, #101F1A);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.login-page {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   BACKGROUND — Soft pastel mesh gradient (green-themed)
+   ========================================================================== */
+.login-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  /* Multi-stop radial gradient mesh */
+  background:
+    radial-gradient(ellipse 65% 55% at 8% 12%, var(--login-sage) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 50% 5%, var(--login-glow-white) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 85% 8%, var(--login-glow-white) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 55% at 12% 90%, var(--login-aqua) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 50% at 88% 85%, var(--login-pale-mint) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 80% at 50% 50%, var(--login-ice) 0%, var(--login-glow-white) 100%);
+  background-color: var(--login-glow-white);
+}
+
+/* Diagonal light streaks */
+.login-streaks {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.login-streaks::before,
+.login-streaks::after {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 30%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.7) 70%, transparent 100%);
+  transform-origin: center;
+  transform: rotate(-25deg);
+  opacity: 0.5;
+}
+.login-streaks::before {
+  top: 22%;
+  left: -30%;
+}
+.login-streaks::after {
+  top: 62%;
+  left: -20%;
+  opacity: 0.35;
+}
+
+/* Drifting blurred light beams */
+.login-beam {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  will-change: transform;
+}
+.login-beam--1 {
+  width: 500px;
+  height: 400px;
+  background: radial-gradient(circle, var(--login-mint-light) 0%, transparent 70%);
+  top: -10%;
+  left: 10%;
+  animation: beamDrift1 var(--beam-duration) ease-in-out infinite alternate;
+}
+.login-beam--2 {
+  width: 450px;
+  height: 350px;
+  background: radial-gradient(circle, var(--login-sage-light) 0%, transparent 70%);
+  bottom: -5%;
+  right: 5%;
+  animation: beamDrift2 calc(var(--beam-duration) * 1.15) ease-in-out infinite alternate;
+}
+.login-beam--3 {
+  width: 350px;
+  height: 300px;
+  background: radial-gradient(circle, var(--login-pale-mint) 0%, transparent 70%);
+  top: 40%;
+  left: 45%;
+  animation: beamDrift3 calc(var(--beam-duration) * 0.9) ease-in-out infinite alternate;
+}
+
+@keyframes beamDrift1 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 40px); }
+}
+@keyframes beamDrift2 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-50px, -30px); }
+}
+@keyframes beamDrift3 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(30px, -25px); }
+}
+
+/* ==========================================================================
+   LEFT SIDE — HUD Illustration
+   ========================================================================== */
+.login-illustration {
+  flex: 0 0 59%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 5;
+  padding: 40px;
+}
+
+/* HUD card container — 3D perspective */
+.hud-scene {
+  perspective: 1200px;
+  perspective-origin: 60% 50%;
+  width: 100%;
+  max-width: 580px;
+  position: relative;
+}
+
+.hud-card-wrapper {
+  transform-style: preserve-3d;
+  will-change: transform;
+  animation: hudFloat var(--float-duration) ease-in-out infinite;
+}
+
+.hud-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  transform: rotateY(-8deg) rotateX(2deg) skewY(0.5deg);
+  transform-style: preserve-3d;
+}
+
+/* The main card SVG */
+.hud-card svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 24px 60px rgba(22, 92, 71, 0.10)) drop-shadow(0 8px 20px rgba(22, 92, 71, 0.06));
+}
+
+/* Connector pills on right edge — slightly different phase */
+.hud-connectors {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%) translateZ(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: hudFloat calc(var(--float-duration) * 1.08) ease-in-out infinite;
+  animation-delay: -0.6s;
+}
+
+.hud-connector-pill {
+  width: 18px;
+  height: 28px;
+  border-radius: 0 6px 6px 0;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.5);
+  backdrop-filter: blur(6px);
+  position: relative;
+}
+.hud-connector-pill::before,
+.hud-connector-pill::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 1px;
+  background: rgba(22, 92, 71, 0.15);
+}
+.hud-connector-pill::before { top: 8px; }
+.hud-connector-pill::after  { top: 14px; }
+
+/* Glow layer — different phase for parallax */
+.hud-glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse at center, rgba(120, 210, 170, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  animation: hudFloat calc(var(--float-duration) * 1.2) ease-in-out infinite;
+  animation-delay: -1.2s;
+}
+
+/* Float animation */
+@keyframes hudFloat {
+  0%, 100% {
+    transform: translateY(0) rotateY(-8deg) rotateX(2deg) skewY(0.5deg);
+  }
+  50% {
+    transform: translateY(calc(-1 * var(--float-y))) rotateY(-7deg) rotateX(1.5deg) skewY(0.3deg);
+  }
+}
+
+/* HUD-specific float for connectors (no card rotation) */
+.hud-connectors {
+  animation-name: connFloat;
+}
+@keyframes connFloat {
+  0%, 100% { transform: translateY(-50%) translateZ(4px) translateY(0); }
+  50%      { transform: translateY(-50%) translateZ(4px) translateY(calc(-1 * var(--float-y) * 1.1)); }
+}
+
+/* ==========================================================================
+   RIGHT SIDE — Form Column
+   ========================================================================== */
+.login-form-side {
+  flex: 0 0 41%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 10;
+  padding: 40px 48px;
+  min-width: 0;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 340px;
+}
+
+/* Brand mark + wordmark */
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.login-brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--gradient-primary, linear-gradient(135deg, #165C47 0%, #238568 100%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(22, 92, 71, 0.20);
+}
+
+.login-brand-text {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text, #101F1A);
+  letter-spacing: -0.02em;
+}
+
+/* Heading */
+.login-title {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--color-text, #101F1A);
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+
+/* Google button styled like reference social button */
+.login-google-btn {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  background: var(--color-surface, #fff);
+  border: 1px solid rgba(16, 64, 51, 0.12);
+  border-radius: 4px;
+  color: var(--color-text, #101F1A);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(16, 64, 51, 0.06);
+}
+
+.login-google-btn svg {
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.login-google-btn:hover {
+  background: var(--color-bg-alt, #EBF2EF);
+  border-color: rgba(16, 64, 51, 0.18);
+  box-shadow: 0 2px 8px rgba(16, 64, 51, 0.08);
+}
+
+.login-google-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #165C47);
+  outline-offset: 2px;
+}
+
+/* Or divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.login-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(16, 64, 51, 0.10);
+}
+
+.login-divider-text {
+  font-size: 13px;
+  color: var(--color-text-faint, #8FA39C);
+  font-weight: 400;
+}
+
+/* ── Frosted Inputs ── */
+.login-form-group {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.login-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 44px;
+  background: var(--login-glass-bg);
+  backdrop-filter: blur(var(--login-glass-blur));
+  -webkit-backdrop-filter: blur(var(--login-glass-blur));
+  border: 1px solid rgba(16, 64, 51, 0.10);
+  border-radius: 4px;
+  color: var(--color-text, #101F1A);
+  font-size: 15px;
+  font-family: var(--font-sans);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  outline: none;
+}
+
+.login-input::placeholder {
+  color: var(--color-text-faint, #8FA39C);
+  font-weight: 400;
+}
+
+.login-input-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary, #165C47);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.login-input:focus {
+  border-color: var(--color-primary, #165C47);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 0 3px rgba(22, 92, 71, 0.10);
+}
+
+.login-input:focus ~ .login-input-icon {
+  opacity: 1;
+}
+
+/* Password toggle */
+.login-pw-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-text-faint, #8FA39C);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  transition: color 0.2s;
+  border-radius: 4px;
+}
+.login-pw-toggle:hover { color: var(--color-text, #101F1A); }
+.login-pw-toggle:focus-visible {
+  outline: 2px solid var(--color-primary, #165C47);
+  outline-offset: 1px;
+}
+
+/* Password strength */
+.login-pw-strength {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 0 2px;
+}
+
+.login-pw-strength-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(16, 64, 51, 0.10);
+  transition: all 0.3s ease;
+}
+.login-pw-strength-bar.active.weak   { background: var(--color-danger, #DC2626); }
+.login-pw-strength-bar.active.fair   { background: var(--color-warning, #D97706); }
+.login-pw-strength-bar.active.good   { background: var(--color-stance-flexible, #0284C7); }
+.login-pw-strength-bar.active.strong { background: var(--color-success, #15803D); }
+
+/* ── Submit Button ── */
+.login-submit {
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+  background: var(--color-primary, #165C47);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(22, 92, 71, 0.22);
+  position: relative;
+}
+
+.login-submit:hover {
+  background: var(--color-primary-light, #238568);
+  box-shadow: 0 6px 20px rgba(22, 92, 71, 0.28);
+  transform: translateY(-1px);
+}
+.login-submit:active { transform: translateY(0); }
+.login-submit:focus-visible {
+  outline: 2px solid var(--color-primary, #165C47);
+  outline-offset: 2px;
+}
+
+/* Spinner */
+.login-spinner {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: loginSpin 0.8s linear infinite;
+}
+.login-submit.loading .login-spinner { display: block; }
+.login-submit.loading .login-btn-text { opacity: 0; position: absolute; }
+
+@keyframes loginSpin { to { transform: rotate(360deg); } }
+
+/* ── Forgot Password & Toggle Links ── */
+.login-forgot {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-primary, #165C47);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+}
+.login-forgot:hover { text-decoration: underline; }
+
+.login-toggle {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--color-text-muted, #4D665E);
+}
+.login-toggle a,
+.login-toggle button {
+  color: var(--color-primary, #165C47);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  padding: 0;
+}
+.login-toggle a:hover,
+.login-toggle button:hover { text-decoration: underline; }
+
+/* ── Messages ── */
+.login-message {
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.login-message.show { display: flex; }
+.login-message.error {
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  color: var(--color-danger, #DC2626);
+}
+.login-message.success {
+  background: rgba(21, 128, 61, 0.06);
+  border: 1px solid rgba(21, 128, 61, 0.18);
+  color: var(--color-success, #15803D);
+}
+.login-message.info {
+  background: rgba(22, 92, 71, 0.06);
+  border: 1px solid rgba(22, 92, 71, 0.15);
+  color: var(--color-primary, #165C47);
+}
+
+/* Forgot password notice (inline) */
+.login-forgot-notice {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-text-faint, #8FA39C);
+  line-height: 1.4;
+}
+
+/* ── Form cross-fade ── */
+.login-form-wrapper {
+  position: relative;
+  min-height: 0;
+}
+
+.login-form {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.login-form[hidden] {
+  display: block !important;
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.login-form:not([hidden]) {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   ENTRANCE ANIMATIONS
+   ========================================================================== */
+.login-entrance-card {
+  opacity: 0;
+  transform: translateX(-40px) scale(0.96);
+  animation: entranceCard var(--entrance-duration) var(--entrance-ease) forwards;
+  animation-delay: 0.1s;
+}
+@keyframes entranceCard {
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.login-entrance-form > * {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.login-entrance-form > *:nth-child(1) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.15s; }
+.login-entrance-form > *:nth-child(2) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.21s; }
+.login-entrance-form > *:nth-child(3) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.27s; }
+.login-entrance-form > *:nth-child(4) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.33s; }
+.login-entrance-form > *:nth-child(5) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.39s; }
+.login-entrance-form > *:nth-child(6) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.45s; }
+.login-entrance-form > *:nth-child(7) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.51s; }
+.login-entrance-form > *:nth-child(8) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.57s; }
+.login-entrance-form > *:nth-child(9) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.63s; }
+.login-entrance-form > *:nth-child(10) { animation: entranceEl var(--entrance-duration) var(--entrance-ease) forwards 0.69s; }
+
+@keyframes entranceEl {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+/* Tablet: scale card down */
+@media (max-width: 1100px) {
+  .login-illustration { flex: 0 0 50%; padding: 24px; }
+  .login-form-side { flex: 0 0 50%; padding: 32px; }
+  .hud-scene { max-width: 420px; }
+}
+
+/* Below 900px: hide illustration */
+@media (max-width: 900px) {
+  .login-illustration { display: none; }
+  .login-form-side {
+    flex: 1;
+    padding: 32px 24px;
+    justify-content: center;
+    align-items: center;
+  }
+  .login-form-container { max-width: 380px; }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .login-form-side { padding: 24px 16px; }
+  .login-form-container { max-width: 100%; }
+  .login-title { font-size: 24px; }
+}
+
+/* Touch targets minimum 44px */
+@media (pointer: coarse) {
+  .login-input { min-height: 48px; }
+  .login-submit { min-height: 48px; }
+  .login-google-btn { min-height: 48px; }
+  .login-pw-toggle { min-width: 44px; min-height: 44px; }
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .hud-card-wrapper,
+  .hud-connectors,
+  .hud-glow,
+  .login-beam,
+  .login-beam--1,
+  .login-beam--2,
+  .login-beam--3 {
+    animation: none !important;
+  }
+
+  .login-entrance-card,
+  .login-entrance-form > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* The SVG internal animations are paused via JS */
+}
