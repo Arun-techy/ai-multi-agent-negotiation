@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node tests/concessionTracking.test.js && node tests/counteroffer.test.js && node tests/offerEvaluation.test.js && node tests/integrationEngine.test.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

@@ -181,6 +181,16 @@
           <button type="button" id="toggle-action">Sign Up here</button>
         </div>
 
+        <!-- Guest Demo Mode Button -->
+        <div style="margin-top: 14px; text-align: center;">
+          <button type="button" class="login-google-btn" id="btn-guest-login" style="justify-content: center; background: rgba(16, 64, 51, 0.05); border: 1px dashed rgba(16, 64, 51, 0.35); color: var(--login-text-dark); font-weight: 600; cursor: pointer;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right: 6px;">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Continue as Guest (Offline Demo)
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -412,6 +422,15 @@
           setTimeout(() => window.location.href = 'app.html', 700);
         } catch (err) {
           clearTimeout(wakeNotice);
+          // Graceful fallback for local development / testing without MongoDB
+          if (!status || status >= 500 || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.message?.includes('server error')) {
+            console.warn('Backend Auth unreachable or DB disconnected. Entering Demo Mode.');
+            storeToken('mock-token-fallback');
+            storeUser({ id: 'demo-user', name: email ? email.split('@')[0] : 'Demo User', email: email || 'demo@negosim.local' });
+            showMessage('success', 'Database offline — logged in as Demo User! Redirecting…');
+            setTimeout(() => window.location.href = 'app.html', 700);
+            return;
+          }
           showMessage('error', friendlyError(err, status));
           btn.classList.remove('loading');
           btn.disabled = false;
@@ -469,6 +488,15 @@
           setTimeout(() => window.location.href = 'app.html', 700);
         } catch (err) {
           clearTimeout(wakeNotice);
+          // Graceful fallback for local development / testing without MongoDB
+          if (!status || status >= 500 || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.message?.includes('server error')) {
+            console.warn('Backend Auth unreachable or DB disconnected. Entering Demo Mode.');
+            storeToken('mock-token-fallback');
+            storeUser({ id: 'demo-user', name: name || 'Demo User', email: email || 'demo@negosim.local' });
+            showMessage('success', 'Database offline — account created (Demo Mode)! Redirecting…');
+            setTimeout(() => window.location.href = 'app.html', 700);
+            return;
+          }
           showMessage('error', friendlyError(err, status));
           btn.classList.remove('loading');
           btn.disabled = false;
@@ -515,6 +543,17 @@
           showMessage('error', 'Google Sign-In is not available. Please use email and password.');
         }
       });
+
+      // ── Guest Demo Mode Click ──
+      const guestBtn = document.getElementById('btn-guest-login');
+      if (guestBtn) {
+        guestBtn.addEventListener('click', () => {
+          storeToken('mock-token-fallback');
+          storeUser({ id: 'guest-user', name: 'Guest Evaluator', email: 'evaluator@infosys-springboard.local' });
+          showMessage('success', 'Entering Demo Mode... Redirecting.');
+          setTimeout(() => { window.location.href = 'app.html'; }, 600);
+        });
+      }
 
     })();
   </script>
